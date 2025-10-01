@@ -38,8 +38,6 @@ public class DukasService implements ISystemListener, InitializingBean, Disposab
 {
     private static DukasService sMe = null;
     
-    
-    
     public final DukasConfig config;
 
     public final IClient client;
@@ -197,16 +195,35 @@ public class DukasService implements ISystemListener, InitializingBean, Disposab
     @Override
     public void run()
     {
-
         String jnlp = config.getCredentialJnlp();
-        String user = config.getCredentialUsername();
-        String pass = config.getCredentialPassword();
+
+        // order of precedence:
+        // 1) environment variables DUKAS_USER / DUKAS_PASS
+        // 2) system properties passed via -Ddukascopy.credential-username=... (Start Command)
+        // 3) values from config (application.properties)
+        String envUser = System.getenv("DUKAS_USER");
+        String envPass = System.getenv("DUKAS_PASS");
+
+        String argUser = System.getProperty("dukascopy.credential-username");
+        String argPass = System.getProperty("dukascopy.credential-password");
+
+        String user = envUser != null ? envUser : (argUser != null ? argUser : config.getCredentialUsername());
+        String pass = envPass != null ? envPass : (argPass != null ? argPass : config.getCredentialPassword());
+
+        // trim to avoid accidental leading/trailing spaces
+        if (user != null) user = user.trim();
+        else user = "";
+
+        if (pass != null) pass = pass.trim();
+        else pass = "";
 
         try
         {
 
-            String hash = DigestUtils.md5DigestAsHex(new ByteArrayInputStream(pass.getBytes(UTF_8)));
+            String hash = pass.isEmpty() ? "NONE" : DigestUtils.md5DigestAsHex(new ByteArrayInputStream(pass.getBytes(UTF_8)));
 
+            // Debug-safe logging: print username and whether password exists (do NOT log the password itself)
+            log.info("DEBUG_DUKAS_USER='{}', DUKAS_PASS_PRESENT={}", user, !pass.isEmpty());
             log.info("IClient connecting... (url={}, user={}, pass=MD5:{})", jnlp, user, hash);
 
             client.connect(jnlp, user, pass);
@@ -223,7 +240,8 @@ public class DukasService implements ISystemListener, InitializingBean, Disposab
             if (millis <= 0L)
                 millis = 1000L;
             
-            log.warn("Dukas IClient connection failure: "+ e.getMessage(), ". Reconnecting in {} ms...", millis, e);
+            // fixed log formatting: use placeholders instead of concatenation
+            log.warn("Dukas IClient connection failure: {}. Reconnecting in {} ms...", e.getMessage(), millis, e);
 
             executor.schedule(this, millis, MILLISECONDS);
 
