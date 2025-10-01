@@ -39,12 +39,10 @@
 
 	<dependencies>
 
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -57,19 +55,10 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
-		</dependency>
--->
-
 		<dependency>
 			<groupId>com.dukascopy.api</groupId>
 			<artifactId>JForex-API</artifactId>
 			<version>2.13.98</version>
-
 		</dependency>
 
 		<dependency>
@@ -78,13 +67,11 @@
 			<version>3.6.37</version>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-configuration2</artifactId>
 			<version>2.7</version>
 		</dependency>
-
 
 		<!-- To write basic websockets against -->
 		<dependency>
@@ -111,13 +98,11 @@
 			<version>${jetty.version}</version>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-
 
 		<!-- Jackson JSON parser -->
 		<dependency>
@@ -138,18 +123,13 @@
 			<version>2.13.2</version>
 		</dependency>
 
-
-		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+		<!-- SLF4J API (keep API only, no simple binding) -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-		</dependency>
-
+		<!-- Removed slf4j-simple to avoid binding conflicts with Spring Boot's Logback -->
 
 	</dependencies>
 
@@ -189,29 +169,22 @@
 				</executions>
 
 			</plugin>
+
+			<!-- maven-war-plugin: استبعاد ملفات JAR المتسببة بتضارب SLF4J عند إنشاء WAR -->
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.3.2</version>
+				<configuration>
+					<packagingExcludes>
+						WEB-INF/lib/slf4j-*.jar,
+						WEB-INF/lib/log4j-slf4j-impl-*.jar,
+						WEB-INF/lib/slf4j-log4j12-*.jar,
+						WEB-INF/lib/log4j-over-slf4j-*.jar
+					</packagingExcludes>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 
-<!-- START: إزالة روابط التسجيل المكررة من WAR -->
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.3.2</version>
-        <configuration>
-          <!-- احذف أي ملفات JAR تتسبب في تضارب SLF4J/Logback/Log4j -->
-          <!-- يمكنك إضافة أسماء ملفات أخرى مفصولة بفاصلة إذا ظهرت في السجلات -->
-          <packagingExcludes>
-            WEB-INF/lib/slf4j-*.jar,
-            WEB-INF/lib/log4j-slf4j-impl-*.jar,
-            WEB-INF/lib/slf4j-log4j12-*.jar,
-            WEB-INF/lib/log4j-over-slf4j-*.jar
-          </packagingExcludes>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <!-- END: إزالة روابط التسجيل المكررة من WAR -->
-
 </project>
-
