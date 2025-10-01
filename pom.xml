@@ -192,4 +192,26 @@
 		</plugins>
 	</build>
 
+<!-- START: إزالة روابط التسجيل المكررة من WAR -->
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.2</version>
+        <configuration>
+          <!-- احذف أي ملفات JAR تتسبب في تضارب SLF4J/Logback/Log4j -->
+          <!-- يمكنك إضافة أسماء ملفات أخرى مفصولة بفاصلة إذا ظهرت في السجلات -->
+          <packagingExcludes>
+            WEB-INF/lib/slf4j-*.jar,
+            WEB-INF/lib/log4j-slf4j-impl-*.jar,
+            WEB-INF/lib/slf4j-log4j12-*.jar,
+            WEB-INF/lib/log4j-over-slf4j-*.jar
+          </packagingExcludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <!-- END: إزالة روابط التسجيل المكررة من WAR -->
+
 </project>
+
